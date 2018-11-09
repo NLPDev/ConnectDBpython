@@ -63,12 +63,10 @@ flag=1
 for rr in df:
 
     item=rr.split('\t')
+    print(len(item))
     if flag:
         tit=item
         break
-
-
-
 
 
 db = pymysql.connect("localhost","root","","NewDatabase" )
@@ -81,6 +79,7 @@ cursor.execute("DROP TABLE IF EXISTS EMPLOYEE")
 
 # Create table as per requirement
 sql = "CREATE TABLE EMPLOYEE ("
+sqlInsert = "INSERT INTO EMPLOYEE ("
 
 
 flag=1
@@ -96,28 +95,53 @@ for tt in tit:
     if flag:
         flag=0
         sql=sql+aa+" CHAR(20)"
+        sqlInsert=sqlInsert+aa
     else:
         sql=sql+", "+aa+" CHAR(20)"
+        sqlInsert=sqlInsert+", "+aa
 
 sql=sql+")"
+sqlInsert=sqlInsert+") VALUES ("
 
 cursor.execute(sql)
+
+flag=1
+i=0
+for rr in df:
+    rr=df.loc[i].iat[0]
+    i=i+1
+
+    item = rr.split('\t')
+    sql = sqlInsert
+
+    ff = 1
+    print(len(item))
+    for aa in item:
+
+        if ff:
+            ff = 0
+            sql = sql + "\""+aa+"\""
+
+        else:
+            sql = sql + ", " + aa
+
+    sql=sql+")"
+    print(sql)
+    try:
+        # Execute the SQL command
+        cursor.execute(sql)
+        # Commit your changes in the database
+        db.commit()
+    except:
+        # Rollback in case there is any error
+        db.rollback()
+        print("adsfafds")
+
 #
-# sql = "INSERT INTO EMPLOYEE(FIRST_NAME, \
-#    LAST_NAME, AGE, SEX, INCOME) \
-#    VALUES ('%s', '%s', '%d', '%c', '%d' )" % \
-#    ('Mac', 'Mohan', 20, 'M', 2000)
-# try:
-#    # Execute the SQL command
-#    cursor.execute(sql)
-#    # Commit your changes in the database
-#    db.commit()
-# except:
-#    # Rollback in case there is any error
-#    db.rollback()
 #
-# # disconnect from server
-# db.close()
+#
+# disconnect from server
+db.close()
 #
 #
 #
