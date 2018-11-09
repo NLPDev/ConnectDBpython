@@ -1,6 +1,5 @@
 import pandas
 
-
 import pymysql
 
 # Create a connection object
@@ -57,20 +56,71 @@ except Exception as e:
     print("Exeception occured:{}".format(e))
 
 
-
-finally:
-
-    connectionInstance.close()
-
-
-
 df=pandas.read_csv('event-data-extract-v0.1.csv')
 
+
+flag=1
 for rr in df:
 
     item=rr.split('\t')
-    for aa in item:
-        print(aa)
+    if flag:
+        tit=item
         break
-    break
-print(df.head())
+
+
+
+
+
+db = pymysql.connect("localhost","root","","NewDatabase" )
+
+# prepare a cursor object using cursor() method
+cursor = db.cursor()
+
+# Drop table if it already exist using execute() method.
+cursor.execute("DROP TABLE IF EXISTS EMPLOYEE")
+
+# Create table as per requirement
+sql = "CREATE TABLE EMPLOYEE ("
+
+
+flag=1
+for tt in tit:
+    aa=tt.split('\"')
+    if len(aa)>1:
+        aa=aa[1]
+    else:
+        aa=aa[0]
+
+    aa=aa.replace(".", "_")
+
+    if flag:
+        flag=0
+        sql=sql+aa+" CHAR(20)"
+    else:
+        sql=sql+", "+aa+" CHAR(20)"
+
+sql=sql+")"
+
+cursor.execute(sql)
+#
+# sql = "INSERT INTO EMPLOYEE(FIRST_NAME, \
+#    LAST_NAME, AGE, SEX, INCOME) \
+#    VALUES ('%s', '%s', '%d', '%c', '%d' )" % \
+#    ('Mac', 'Mohan', 20, 'M', 2000)
+# try:
+#    # Execute the SQL command
+#    cursor.execute(sql)
+#    # Commit your changes in the database
+#    db.commit()
+# except:
+#    # Rollback in case there is any error
+#    db.rollback()
+#
+# # disconnect from server
+# db.close()
+#
+#
+#
+#
+# connectionInstance.close()
+
