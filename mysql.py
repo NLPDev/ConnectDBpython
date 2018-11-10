@@ -63,7 +63,7 @@ flag=1
 for rr in df:
 
     item=rr.split('\t')
-    print(len(item))
+    lt=len(item)
     if flag:
         tit=item
         break
@@ -115,18 +115,27 @@ for rr in df:
     sql = sqlInsert
 
     ff = 1
-    print(len(item))
+
     for aa in item:
+        aa = aa.split('\"')
+        if len(aa) > 1:
+            aa = aa[1]
+        else:
+            aa = aa[0]
 
         if ff:
             ff = 0
             sql = sql + "\""+aa+"\""
 
         else:
-            sql = sql + ", " + aa
+            sql = sql + ", \"" + aa + "\""
+
+
+    for ii in range(lt-len(item)):
+        sql=sql+", "+"\"  \""
 
     sql=sql+")"
-    print(sql)
+
     try:
         # Execute the SQL command
         cursor.execute(sql)
@@ -135,7 +144,7 @@ for rr in df:
     except:
         # Rollback in case there is any error
         db.rollback()
-        print("adsfafds")
+
 
 #
 #
