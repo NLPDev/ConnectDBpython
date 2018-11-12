@@ -2,6 +2,14 @@ import pandas
 
 import pymysql
 
+from openpyxl import Workbook
+
+wb=Workbook()
+ws=wb.active
+
+shw = wb.active
+shw.title = 'Sheet'
+
 # Create a connection object
 
 databaseServerIP = "127.0.0.1"  # IP address of the MySQL database server
@@ -81,6 +89,8 @@ cursor.execute("DROP TABLE IF EXISTS EMPLOYEE")
 sql = "CREATE TABLE EMPLOYEE ("
 sqlInsert = "INSERT INTO EMPLOYEE ("
 
+cntrow=1
+cntcolumn=1
 
 flag=1
 for tt in tit:
@@ -92,22 +102,33 @@ for tt in tit:
 
     aa=aa.replace(".", "_")
 
+    cell = shw.cell(row=cntrow, column=cntcolumn)
+    cell.value = aa
+    cntcolumn = cntcolumn + 1
+
     if flag:
         flag=0
         sql=sql+aa+" CHAR(20)"
         sqlInsert=sqlInsert+aa
+
     else:
         sql=sql+", "+aa+" CHAR(20)"
         sqlInsert=sqlInsert+", "+aa
 
+
 sql=sql+")"
-sqlInsert=sqlInsert+") VALUES ("
 
 cursor.execute(sql)
+
+sqlInsert=sqlInsert+") VALUES ("
+
+
 
 flag=1
 i=0
 for rr in df:
+    cntrow=cntrow+1
+    cntcolumn=1
     rr=df.loc[i].iat[0]
     i=i+1
 
@@ -122,6 +143,10 @@ for rr in df:
             aa = aa[1]
         else:
             aa = aa[0]
+
+        cell = shw.cell(row=cntrow, column=cntcolumn)
+        cell.value = aa
+        cntcolumn = cntcolumn + 1
 
         if ff:
             ff = 0
@@ -146,14 +171,10 @@ for rr in df:
         db.rollback()
 
 
-#
-#
-#
+
+wb.save("res.xlsx")
 # disconnect from server
 db.close()
 #
-#
-#
-#
-# connectionInstance.close()
+connectionInstance.close()
 
