@@ -1,9 +1,8 @@
 import pandas
-
 import pymysql
-
 from openpyxl import Workbook
 
+#Create Excel
 wb=Workbook()
 ws=wb.active
 
@@ -11,17 +10,12 @@ shw = wb.active
 shw.title = 'Sheet'
 
 # Create a connection object
-
 databaseServerIP = "127.0.0.1"  # IP address of the MySQL database server
-
 databaseUserName = "root"  # User name of the database server
-
 databaseUserPassword = ""  # Password for the database user
-
 newDatabaseName = "NewDatabase"  # Name of the database that is to be created
 
 charSet = "utf8mb4"  # Character set
-
 cusrorType = pymysql.cursors.DictCursor
 
 connectionInstance = pymysql.connect(host=databaseServerIP, user=databaseUserName, password=databaseUserPassword,
@@ -29,70 +23,50 @@ connectionInstance = pymysql.connect(host=databaseServerIP, user=databaseUserNam
                                      charset=charSet, cursorclass=cusrorType)
 
 try:
-
-    # Create a cursor object
-
     cursorInsatnce = connectionInstance.cursor()
-
-    # SQL Statement to create a database
-
     sqlStatement = "CREATE DATABASE " + newDatabaseName
-
-    # Execute the create database SQL statment through the cursor instance
-
     cursorInsatnce.execute(sqlStatement)
-
-    # SQL query string
-
     sqlQuery = "SHOW DATABASES"
-
-    # Execute the sqlQuery
-
     cursorInsatnce.execute(sqlQuery)
-
-    # Fetch all the rows
-
     databaseList = cursorInsatnce.fetchall()
 
-    for datatbase in databaseList:
-        print(datatbase)
-
-
+    # for datatbase in databaseList:
+    #     print(datatbase)
 
 except Exception as e:
-
     print("Exeception occured:{}".format(e))
 
 
-df=pandas.read_csv('event-data-extract-v0.1.csv')
-
+df=pandas.read_csv('event-data-extract-v0.1.csv')#Read data from csv
 
 flag=1
 for rr in df:
-
     item=rr.split('\t')
     lt=len(item)
     if flag:
         tit=item
         break
 
-
 db = pymysql.connect("localhost","root","","NewDatabase" )
-
-# prepare a cursor object using cursor() method
 cursor = db.cursor()
 
-# Drop table if it already exist using execute() method.
 cursor.execute("DROP TABLE IF EXISTS EMPLOYEE")
 
-# Create table as per requirement
 sql = "CREATE TABLE EMPLOYEE ("
 sqlInsert = "INSERT INTO EMPLOYEE ("
 
-cntrow=1
+cntrow=1    #Excel Row, Column number
 cntcolumn=1
 
 flag=1
+
+setlen=df.loc[0].iat[0]
+
+setst=setlen.split('\t')
+
+si=0
+sl=len(setlen)
+
 for tt in tit:
     aa=tt.split('\"')
     if len(aa)>1:
@@ -101,6 +75,10 @@ for tt in tit:
         aa=aa[0]
 
     aa=aa.replace(".", "_")
+
+    if si<sl:
+        st = setst[si]
+        si=si+1
 
     cell = shw.cell(row=cntrow, column=cntcolumn)
     cell.value = aa
@@ -112,17 +90,19 @@ for tt in tit:
         sqlInsert=sqlInsert+aa
 
     else:
-        sql=sql+", "+aa+" CHAR(20)"
-        sqlInsert=sqlInsert+", "+aa
+        if len(st)>20:
+            sql = sql + ", " + aa + " CHAR(200)"
+            sqlInsert = sqlInsert + ", " + aa
+        else:
+            sql=sql+", "+aa+" CHAR(20)"
+            sqlInsert=sqlInsert+", "+aa
 
 
 sql=sql+")"
 
-cursor.execute(sql)
+cursor.execute(sql) #Create Table
 
 sqlInsert=sqlInsert+") VALUES ("
-
-
 
 flag=1
 i=0
@@ -175,6 +155,6 @@ for rr in df:
 wb.save("res.xlsx")
 # disconnect from server
 db.close()
-#
+
 connectionInstance.close()
 
